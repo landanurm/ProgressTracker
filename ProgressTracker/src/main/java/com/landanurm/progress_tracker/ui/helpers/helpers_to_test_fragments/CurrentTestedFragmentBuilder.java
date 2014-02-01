@@ -1,4 +1,4 @@
-package com.landanurm.progress_tracker.ui.helpers.helper_to_test_fragments;
+package com.landanurm.progress_tracker.ui.helpers.helpers_to_test_fragments;
 
 import android.app.Fragment;
 import android.os.Bundle;

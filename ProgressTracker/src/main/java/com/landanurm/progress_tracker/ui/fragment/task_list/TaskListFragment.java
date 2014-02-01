@@ -20,24 +20,19 @@ import java.util.List;
  */
 public class TaskListFragment extends Fragment {
 
-    public static interface OnNeedToAddNewTaskListener {
+    public static interface Callbacks {
+        List<ProgressiveTask> getTasks();
         void onNeedToAddNewTask();
     }
 
-    public static interface TasksProvider {
-        List<ProgressiveTask> getTasks();
-    }
-
-    private OnNeedToAddNewTaskListener onNeedToAddNewTaskListener;
+    private Callbacks callbacks;
     private SimpleArrayAdapter<ProgressiveTask> adapter;
-    private TasksProvider tasksProvider;
     private List<ProgressiveTask> tasks;
 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        onNeedToAddNewTaskListener = (OnNeedToAddNewTaskListener) activity;
-        tasksProvider = (TasksProvider) activity;
+        callbacks = (Callbacks) activity;
     }
 
     @Override
@@ -56,7 +51,7 @@ public class TaskListFragment extends Fragment {
         findViewById(R.id.addButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onNeedToAddNewTaskListener.onNeedToAddNewTask();
+                callbacks.onNeedToAddNewTask();
             }
         });
     }
@@ -87,7 +82,7 @@ public class TaskListFragment extends Fragment {
     }
 
     public void updateTaskList() {
-        List<ProgressiveTask> actualTasks = tasksProvider.getTasks();
+        List<ProgressiveTask> actualTasks = callbacks.getTasks();
         if (!tasks.equals(actualTasks)) {
             tasks.clear();
             tasks.addAll(actualTasks);

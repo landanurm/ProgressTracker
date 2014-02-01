@@ -10,9 +10,9 @@ import android.widget.ListView;
 import com.landanurm.progress_tracker.R;
 import com.landanurm.progress_tracker.data.ProgressiveTask;
 import com.landanurm.progress_tracker.ui.fragment.task_list.TaskListFragment;
-import com.landanurm.progress_tracker.ui.helpers.helper_to_test_fragments.ActivityHelperToTestFragments;
-import com.landanurm.progress_tracker.ui.helpers.helper_to_test_fragments.CurrentTestedFragmentBuilder;
-import com.landanurm.progress_tracker.ui.helpers.helper_to_test_fragments.FragmentBuilder;
+import com.landanurm.progress_tracker.ui.helpers.helpers_to_test_fragments.CurrentTestedFragmentBuilder;
+import com.landanurm.progress_tracker.ui.helpers.helpers_to_test_fragments.FragmentBuilder;
+import com.landanurm.progress_tracker.ui.helpers.helpers_to_test_fragments.helper_to_test_tasklist_fragment.ActivityHelperToTestTaskListFragment;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -21,9 +21,9 @@ import java.util.List;
 /**
  * Created by Leonid on 26.01.14.
  */
-public class TestTaskListFragment extends ActivityInstrumentationTestCase2<ActivityHelperToTestFragments> {
+public class TestTaskListFragment extends ActivityInstrumentationTestCase2<ActivityHelperToTestTaskListFragment> {
 
-    private ActivityHelperToTestFragments activity;
+    private ActivityHelperToTestTaskListFragment activity;
     private TaskListFragment testedFragment;
 
     private ListView listView;
@@ -31,7 +31,7 @@ public class TestTaskListFragment extends ActivityInstrumentationTestCase2<Activ
 
 
     public TestTaskListFragment() {
-        super(ActivityHelperToTestFragments.class);
+        super(ActivityHelperToTestTaskListFragment.class);
     }
 
 
@@ -68,26 +68,38 @@ public class TestTaskListFragment extends ActivityInstrumentationTestCase2<Activ
         assertTrue(listView.getCount() == 0);
     }
 
-    private static class OnNeedToAddNewTaskListenerHelperToTest implements TaskListFragment.OnNeedToAddNewTaskListener {
-        public boolean clicked;
+    private static class CallbacksImpl implements TaskListFragment.Callbacks, Serializable {
+        private final List<ProgressiveTask> tasks;
+        public boolean addNewTaskButtonWasClicked;
 
-        public OnNeedToAddNewTaskListenerHelperToTest() {
-            clicked = false;
+        static CallbacksImpl withoutTasks() {
+            List<ProgressiveTask> noTasks = new ArrayList<ProgressiveTask>();
+            return new CallbacksImpl(noTasks);
+        }
+
+        CallbacksImpl(List<ProgressiveTask> tasks) {
+            this.tasks = tasks;
+            this.addNewTaskButtonWasClicked = false;
+        }
+
+        @Override
+        public List<ProgressiveTask> getTasks() {
+            return tasks;
         }
 
         @Override
         public void onNeedToAddNewTask() {
-            clicked = true;
+            addNewTaskButtonWasClicked = true;
         }
     }
 
     @UiThreadTest
     public void testClickOnAddButtonTellsHostActivityThatNeedToAddNewTask() {
-        OnNeedToAddNewTaskListenerHelperToTest helper = new OnNeedToAddNewTaskListenerHelperToTest();
-        activity.setOnNeedToAddNewTaskListener(helper);
-        assertFalse(helper.clicked);
+        CallbacksImpl callbacks = CallbacksImpl.withoutTasks();
+        activity.setCallbacks(callbacks);
+        assertFalse(callbacks.addNewTaskButtonWasClicked);
         addButton.performClick();
-        assertTrue(helper.clicked);
+        assertTrue(callbacks.addNewTaskButtonWasClicked);
     }
 
 
@@ -104,32 +116,14 @@ public class TestTaskListFragment extends ActivityInstrumentationTestCase2<Activ
         String actualNameOfTask = taskNames.get(0);
         assertEquals(nameOfTask, actualNameOfTask);
 
-        activity.setTasksProvider(new TaskListFragment.TasksProvider() {
-            @Override
-            public List<ProgressiveTask> getTasks() {
-                return new ArrayList<ProgressiveTask>();
-            }
-        });
-    }
-
-
-    private static class TasksProviderHelperToTest implements TaskListFragment.TasksProvider, Serializable {
-        private final List<ProgressiveTask> tasks;
-
-        public TasksProviderHelperToTest(List<ProgressiveTask> tasks) {
-            this.tasks = tasks;
-        }
-
-        @Override
-        public List<ProgressiveTask> getTasks() {
-            return tasks;
-        }
+        activity.setCallbacks(CallbacksImpl.withoutTasks());
     }
 
     private void addNewTaskToAppData(String nameOfTask) {
         final List<ProgressiveTask> currentTasks = activity.getTasks();
         currentTasks.add(prepareTask(nameOfTask));
-        activity.setTasksProvider(new TasksProviderHelperToTest(currentTasks));
+        CallbacksImpl callbacks = new CallbacksImpl(currentTasks);
+        activity.setCallbacks(callbacks);
     }
 
     private ProgressiveTask prepareTask(String nameOfTask) {

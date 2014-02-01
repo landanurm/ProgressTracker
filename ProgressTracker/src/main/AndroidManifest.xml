@@ -17,7 +17,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.helpers.helper_to_test_fragments.ActivityHelperToTestFragments"
+            android:name=".ui.helpers.helpers_to_test_fragments.helper_to_test_tasklist_fragment.ActivityHelperToTestTaskListFragment"
             android:label="@string/app_name" >
         </activity>
     </application>
