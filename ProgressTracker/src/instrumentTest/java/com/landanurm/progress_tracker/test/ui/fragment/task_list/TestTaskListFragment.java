@@ -4,6 +4,7 @@ import android.app.Fragment;
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.UiThreadTest;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
@@ -16,6 +17,7 @@ import com.landanurm.progress_tracker.ui.helpers.helpers_to_test_fragments.helpe
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -27,7 +29,7 @@ public class TestTaskListFragment extends ActivityInstrumentationTestCase2<Activ
     private TaskListFragment testedFragment;
 
     private ListView listView;
-    private View addButton;
+    private ImageButton addButton;
 
 
     public TestTaskListFragment() {
@@ -52,7 +54,7 @@ public class TestTaskListFragment extends ActivityInstrumentationTestCase2<Activ
 
     private void findViews(View rootView) {
         listView = (ListView) rootView.findViewById(R.id.taskList);
-        addButton = rootView.findViewById(R.id.addButton);
+        addButton = (ImageButton) rootView.findViewById(R.id.addButton);
     }
 
     public void testPreconditions() {
@@ -69,8 +71,11 @@ public class TestTaskListFragment extends ActivityInstrumentationTestCase2<Activ
     }
 
     private static class CallbacksImpl implements TaskListFragment.Callbacks, Serializable {
-        private final List<ProgressiveTask> tasks;
+        public final List<ProgressiveTask> clickedTasks;
         public boolean addNewTaskButtonWasClicked;
+
+        private final List<ProgressiveTask> tasks;
+
 
         static CallbacksImpl withoutTasks() {
             List<ProgressiveTask> noTasks = new ArrayList<ProgressiveTask>();
@@ -79,7 +84,8 @@ public class TestTaskListFragment extends ActivityInstrumentationTestCase2<Activ
 
         CallbacksImpl(List<ProgressiveTask> tasks) {
             this.tasks = tasks;
-            this.addNewTaskButtonWasClicked = false;
+            clickedTasks = new ArrayList<ProgressiveTask>();
+            addNewTaskButtonWasClicked = false;
         }
 
         @Override
@@ -90,6 +96,11 @@ public class TestTaskListFragment extends ActivityInstrumentationTestCase2<Activ
         @Override
         public void onNeedToAddNewTask() {
             addNewTaskButtonWasClicked = true;
+        }
+
+        @Override
+        public void onTaskClick(ProgressiveTask clickedTask) {
+            clickedTasks.add(clickedTask);
         }
     }
 
@@ -146,5 +157,46 @@ public class TestTaskListFragment extends ActivityInstrumentationTestCase2<Activ
         ListAdapter adapter = listView.getAdapter();
         ProgressiveTask task = (ProgressiveTask) adapter.getItem(index);
         return task.name;
+    }
+
+
+    @UiThreadTest
+    public void testClickOnTaskListItemNotifyHostActivity() {
+        List<ProgressiveTask> tasks = Arrays.asList(new ProgressiveTask[] {
+                prepareTask("Task 1"),
+                prepareTask("Task 2"),
+                prepareTask("Task 3"),
+                prepareTask("Task 4"),
+                prepareTask("Task 5")
+        });
+        CallbacksImpl callbacks = new CallbacksImpl(tasks);
+        activity.setCallbacks(callbacks);
+        assertTrue(callbacks.clickedTasks.isEmpty());
+
+        int clickedTasksCount = 0;
+        for (int index = 0; index < tasks.size(); ++index) {
+            clickOnTaskByIndex(index);
+            ++clickedTasksCount;
+            assertTrue((callbacks.clickedTasks.size() == clickedTasksCount));
+            assertTrue(areBeginningOfListsEqual(callbacks.clickedTasks, tasks, index + 1));
+        }
+    }
+
+    private static <T> boolean areBeginningOfListsEqual(List<T> list1, List<T> list2, int beginningLength) {
+        for (int i = 0; i < beginningLength; ++i) {
+            T elem1 = list1.get(i);
+            T elem2 = list2.get(i);
+            if (!elem1.equals(elem2)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void clickOnTaskByIndex(int indexOfTask) {
+        listView.performItemClick(
+                listView.getChildAt(indexOfTask),
+                indexOfTask,
+                listView.getAdapter().getItemId(indexOfTask));
     }
 }

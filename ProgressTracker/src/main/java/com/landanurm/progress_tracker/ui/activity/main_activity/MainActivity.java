@@ -4,11 +4,16 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.landanurm.progress_tracker.R;
+import com.landanurm.progress_tracker.data.ProgressiveTask;
 import com.landanurm.progress_tracker.ui.fragment.task_list.TaskListFragment;
 
-public class MainActivity extends Activity {
+import java.util.Arrays;
+import java.util.List;
+
+public class MainActivity extends Activity implements TaskListFragment.Callbacks {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,4 +48,45 @@ public class MainActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public List<ProgressiveTask> getTasks() {
+        return Arrays.asList(new ProgressiveTask[] {
+                taskWithName("Task 1"),
+                taskWithName("Task 2"),
+                taskWithName("Task 3"),
+                taskWithName("Task 4"),
+                taskWithName("Task 5"),
+                taskWithName("Task 6"),
+                taskWithName("Task 7"),
+                taskWithName("Task 8"),
+                taskWithName("Task 9"),
+                taskWithName("Task 10"),
+                taskWithName("Task 11"),
+                taskWithName("Task 12"),
+                taskWithName("Task 13"),
+                taskWithName("Task 14"),
+                taskWithName("Task 15"),
+                taskWithName("Task 16"),
+                taskWithName("Task 17"),
+                taskWithName("Task 18"),
+                taskWithName("Task 19"),
+                taskWithName("Task 20")
+        });
+    }
+
+    private ProgressiveTask taskWithName(String name) {
+        ProgressiveTask task = new ProgressiveTask();
+        task.name = name;
+        return task;
+    }
+
+    @Override
+    public void onNeedToAddNewTask() {
+        Toast.makeText(this, "Add NEW Task", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onTaskClick(ProgressiveTask clickedTask) {
+        Toast.makeText(this, "Task <" + clickedTask.name + ">", Toast.LENGTH_SHORT).show();
+    }
 }

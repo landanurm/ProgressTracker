@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.landanurm.progress_tracker.R;
@@ -18,11 +19,12 @@ import java.util.List;
 /**
  * Created by Leonid on 26.01.14.
  */
-public class TaskListFragment extends Fragment {
+public class TaskListFragment extends Fragment implements AdapterView.OnItemClickListener {
 
     public static interface Callbacks {
         List<ProgressiveTask> getTasks();
         void onNeedToAddNewTask();
+        void onTaskClick(ProgressiveTask clickedTask);
     }
 
     private Callbacks callbacks;
@@ -72,6 +74,7 @@ public class TaskListFragment extends Fragment {
         adapter = new SimpleArrayAdapter<ProgressiveTask>(getActivity(), tasks, convertor);
         ListView listView = (ListView) findViewById(R.id.taskList);
         listView.setAdapter(adapter);
+        listView.setOnItemClickListener(this);
     }
 
 
@@ -88,5 +91,11 @@ public class TaskListFragment extends Fragment {
             tasks.addAll(actualTasks);
             adapter.notifyDataSetChanged();
         }
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        ProgressiveTask task = adapter.getItem(position);
+        callbacks.onTaskClick(task);
     }
 }

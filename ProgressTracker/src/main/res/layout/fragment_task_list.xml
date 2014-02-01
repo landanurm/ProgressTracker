@@ -9,7 +9,7 @@
         android:layout_margin="@dimen/margin_of_add_button_on_task_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:src="@android:drawable/ic_input_add"
+        android:src="@drawable/ic_add_new_task"
         android:id="@+id/addButton" />
 
     <ListView

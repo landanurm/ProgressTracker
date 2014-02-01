@@ -28,11 +28,18 @@ public class ActivityHelperToTestTaskListFragment extends Activity implements Ta
         public void onNeedToAddNewTask() {
             // do nothing
         }
+
+        @Override
+        public void onTaskClick(ProgressiveTask clickedTask) {
+
+        }
     }
 
     private static final String KEY_OF_CALLBACKS = CallbacksDummyImpl.class.getName();
 
     private TaskListFragment.Callbacks callbacks;
+
+    private TaskListFragment taskListFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,10 +53,10 @@ public class ActivityHelperToTestTaskListFragment extends Activity implements Ta
         }
 
         if (savedInstanceState == null) {
-            Fragment currentTestedFragment = CurrentTestedFragmentBuilder.build();
+            taskListFragment = (TaskListFragment) CurrentTestedFragmentBuilder.build();
             getFragmentManager()
                 .beginTransaction()
-                .add(R.id.containerOfCurrentTestedFragment, currentTestedFragment)
+                .add(R.id.containerOfCurrentTestedFragment, taskListFragment)
                 .commit();
         }
     }
@@ -69,11 +76,17 @@ public class ActivityHelperToTestTaskListFragment extends Activity implements Ta
         callbacks.onNeedToAddNewTask();
     }
 
+    @Override
+    public void onTaskClick(ProgressiveTask clickedTask) {
+        callbacks.onTaskClick(clickedTask);
+    }
+
     public void setCallbacks(TaskListFragment.Callbacks callbacks) {
         if (!(callbacks instanceof Serializable)) {
             throw new IllegalArgumentException("callbacks must implement Serializable");
         }
         this.callbacks = callbacks;
+        taskListFragment.updateTaskList();
     }
 
     @Override
